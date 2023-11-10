@@ -327,89 +327,6 @@ func TestService_ApplicationProcessor(t *testing.T) {
 		setup   func(mockRepo *repository.MockUserRepo)
 	}{
 		{
-			name: "success",
-			args: args{
-				ctx: context.Background(),
-				applicant: []models.RequestJob{
-					{
-						Name:               "John",
-						Jid:                0,
-						NoticePeriod:       15,
-						Budget:             400,
-						LocationsIDs:       []uint{1},
-						TechnologyStackIDs: []uint{1, 2},
-						WorkModeIDs:        []uint{1, 2},
-						Description:        "job sample",
-						Experience:         8,
-						QualificationIDs:   []uint{},
-						ShiftIDs:           []uint{1},
-						JobTypeIDs:         []uint{1},
-					},
-					{
-						Name:               "Sam",
-						Jid:                1,
-						NoticePeriod:       30,
-						Budget:             4000,
-						LocationsIDs:       []uint{1},
-						TechnologyStackIDs: []uint{1, 2},
-						WorkModeIDs:        []uint{1, 2},
-						Description:        "job sample2",
-						Experience:         2,
-						QualificationIDs:   []uint{1, 2},
-						ShiftIDs:           []uint{1},
-						JobTypeIDs:         []uint{1},
-					},
-				},
-			},
-			want: []models.RequestJob{
-				{
-					Name:               "Sam",
-					Jid:                1,
-					NoticePeriod:       30,
-					Budget:             4000,
-					LocationsIDs:       []uint{1},
-					TechnologyStackIDs: []uint{1, 2},
-					WorkModeIDs:        []uint{1, 2},
-					Description:        "job sample2",
-					Experience:         2,
-					QualificationIDs:   []uint{1, 2},
-					ShiftIDs:           []uint{1},
-					JobTypeIDs:         []uint{1},
-				},
-			},
-			wantErr: false,
-			setup: func(mockRepo *repository.MockUserRepo) {
-				mockRepo.EXPECT().FetchJobPostingByID(gomock.Any(), uint64(0)).Return(models.Jobs{}, errors.New("test error")).Times(1)
-				mockRepo.EXPECT().FetchJobPostingByID(gomock.Any(), uint64(1)).Return(models.Jobs{
-					Model:  gorm.Model{ID: 1},
-					MinNP:  20,
-					MaxNP:  50,
-					Budget: 600000,
-					Locations: []models.Locations{
-						{Model: gorm.Model{ID: 1}},
-					},
-					TechnologyStacks: []models.TechnologyStacks{
-						{Model: gorm.Model{ID: 1}},
-					},
-					WorkModes: []models.WorkModes{
-						{Model: gorm.Model{ID: 1}},
-					},
-					MinExp: 1,
-					MaxExp: 3,
-					Qualifications: []models.Qualifications{
-						{Model: gorm.Model{ID: 1}},
-					},
-					Shifts: []models.Shifts{
-						{Model: gorm.Model{ID: 1}},
-					},
-					JobTypes: []models.JobTypes{
-						{Model: gorm.Model{ID: 1}},
-					},
-				}, nil).Times(1)
-			},
-		},
-
-		{
 			name: "Validation Check",
 			args: args{
 				ctx: context.Background(),
@@ -531,9 +448,36 @@ func TestService_ApplicationProcessor(t *testing.T) {
 						ShiftIDs:           []uint{1},
 						JobTypeIDs:         []uint{10},
 					},
+					{
+						Name:               "J",
+						Jid:                10,
+						NoticePeriod:       2,
+						Budget:             400,
+						LocationsIDs:       []uint{1},
+						TechnologyStackIDs: []uint{1, 2},
+						WorkModeIDs:        []uint{1},
+						Experience:         3,
+						QualificationIDs:   []uint{1},
+						ShiftIDs:           []uint{1},
+						JobTypeIDs:         []uint{1},
+					},
 				},
 			},
-			want:    []models.RequestJob{},
+			want: []models.RequestJob{
+				{
+					Name:               "J",
+					Jid:                10,
+					NoticePeriod:       2,
+					Budget:             400,
+					LocationsIDs:       []uint{1},
+					TechnologyStackIDs: []uint{1, 2},
+					WorkModeIDs:        []uint{1},
+					Experience:         3,
+					QualificationIDs:   []uint{1},
+					ShiftIDs:           []uint{1},
+					JobTypeIDs:         []uint{1},
+				},
+			},
 			wantErr: false,
 			setup: func(mockRepo *repository.MockUserRepo) {
 				//mockRepo.EXPECT().GetJobById(gomock.Any(), uint(0)).Return(models.Job{}, errors.New("test error")).Times(1)
@@ -749,6 +693,33 @@ func TestService_ApplicationProcessor(t *testing.T) {
 					},
 				}, nil).Times(1)
 				mockRepo.EXPECT().FetchJobPostingByID(gomock.Any(), uint64(9)).Return(models.Jobs{
+					Model:  gorm.Model{ID: 1},
+					Cid:    1,
+					MinNP:  0,
+					MaxNP:  2,
+					Budget: 600000,
+					Locations: []models.Locations{
+						{Model: gorm.Model{ID: 1}},
+					},
+					TechnologyStacks: []models.TechnologyStacks{
+						{Model: gorm.Model{ID: 1}}, {Model: gorm.Model{ID: 2}},
+					},
+					WorkModes: []models.WorkModes{
+						{Model: gorm.Model{ID: 1}},
+					},
+					MinExp: 2,
+					MaxExp: 7,
+					Qualifications: []models.Qualifications{
+						{Model: gorm.Model{ID: 1}},
+					},
+					Shifts: []models.Shifts{
+						{Model: gorm.Model{ID: 1}},
+					},
+					JobTypes: []models.JobTypes{
+						{Model: gorm.Model{ID: 1}},
+					},
+				}, nil).Times(1)
+				mockRepo.EXPECT().FetchJobPostingByID(gomock.Any(), uint64(10)).Return(models.Jobs{
 					Model:  gorm.Model{ID: 1},
 					Cid:    1,
 					MinNP:  0,
