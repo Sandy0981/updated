@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"github.com/rs/zerolog/log"
 	"job-portal-api/internal/models"
 	"sync"
 )
@@ -77,6 +78,16 @@ func (s *Service) ApplicationProcessor(ctx context.Context, jobApplications []mo
 
 func validateJobApplication(application models.RequestJob, job models.Jobs) bool {
 
+	// Check Notice Period
+	if application.NoticePeriod < job.MinNP || application.NoticePeriod > job.MaxNP {
+		log.Print("Notice period criteria not matched :-", application.Name)
+		return false
+	}
+	// Compare Budget
+	if application.Budget > job.Budget {
+		log.Print("Budget criteria not matched :-", application.Name)
+		return false
+	}
 	// Check for matching location IDs
 	foundLocation := false
 	for _, v := range application.LocationsIDs {
@@ -88,6 +99,49 @@ func validateJobApplication(application models.RequestJob, job models.Jobs) bool
 		}
 	}
 	if !foundLocation {
+		log.Print("location criteria not matched :-", application.Name)
+		return false
+	}
+
+	requiredTechCount := len(job.TechnologyStacks) / 2 // 50% of required technologies
+
+	// Count how many technologies in the application match the required ones
+	matchingTechCount := 0
+	for _, techID := range application.TechnologyStackIDs {
+		for _, reqTechID := range job.TechnologyStacks {
+			if techID == reqTechID.ID {
+				matchingTechCount++
+				break
+			}
+		}
+	}
+	if matchingTechCount < requiredTechCount {
+		log.Print("Skills criteria not matched :-", application.Name)
+		return false
+	}
+	// Check Work Mode
+	workModeSatisfied := false
+	for _, appWorkMode := range application.WorkModeIDs {
+		for _, jobWorkMode := range job.WorkModes {
+			if appWorkMode == jobWorkMode.ID {
+				workModeSatisfied = true
+				break
+			}
+		}
+		if workModeSatisfied {
+			break
+		}
+	}
+
+	if !workModeSatisfied {
+		log.Print("workMode criteria not matched :-", application.Name)
+		return false
+
+	}
+
+	// Check Experience
+	if application.Experience < job.MinExp || application.Experience > job.MaxExp {
+		log.Print("experience criteria not match :-", application.Name)
 		return false
 	}
 
@@ -109,76 +163,9 @@ func validateJobApplication(application models.RequestJob, job models.Jobs) bool
 	}
 
 	if !qualificationSatisfied {
+		log.Print("qualification criteria not match :-", application.Name)
 		return false
 	}
-
-	// Compare Budget
-	if application.Budget > job.Budget {
-		return false
-	}
-
-	// Check Experience
-	if application.Experience < job.MinExp || application.Experience > job.MaxExp {
-		return false
-	}
-
-	// Check Notice Period
-	if application.NoticePeriod < job.MinNP || application.NoticePeriod > job.MaxNP {
-		return false
-	}
-
-	requiredTechCount := len(job.TechnologyStacks) / 2 // 50% of required technologies
-
-	// Count how many technologies in the application match the required ones
-	matchingTechCount := 0
-	for _, techID := range application.TechnologyStackIDs {
-		for _, reqTechID := range job.TechnologyStacks {
-			if techID == reqTechID.ID {
-				matchingTechCount++
-				break
-			}
-		}
-	}
-	if matchingTechCount < requiredTechCount {
-		return false
-	}
-
-	// Check Job Type
-	jobTypeSatisfied := false
-	for _, appJobType := range application.JobTypeIDs {
-		for _, jobJobType := range job.JobTypes {
-			if appJobType == jobJobType.ID {
-				jobTypeSatisfied = true
-				break
-			}
-		}
-		if jobTypeSatisfied {
-			break
-		}
-	}
-
-	if !jobTypeSatisfied {
-		return false
-	}
-
-	// Check Work Mode
-	workModeSatisfied := false
-	for _, appWorkMode := range application.WorkModeIDs {
-		for _, jobWorkMode := range job.WorkModes {
-			if appWorkMode == jobWorkMode.ID {
-				workModeSatisfied = true
-				break
-			}
-		}
-		if workModeSatisfied {
-			break
-		}
-	}
-
-	if !workModeSatisfied {
-		return false
-	}
-
 	// Check Shifts
 	shiftSatisfied := false
 	for _, appShift := range application.ShiftIDs {
@@ -192,10 +179,26 @@ func validateJobApplication(application models.RequestJob, job models.Jobs) bool
 			break
 		}
 	}
-
 	if !shiftSatisfied {
+		log.Print("shift criteria not matched :-", application.Name)
 		return false
 	}
-
+	// Check Job Type
+	jobTypeSatisfied := false
+	for _, appJobType := range application.JobTypeIDs {
+		for _, jobJobType := range job.JobTypes {
+			if appJobType == jobJobType.ID {
+				jobTypeSatisfied = true
+				break
+			}
+		}
+		if jobTypeSatisfied {
+			break
+		}
+	}
+	if !jobTypeSatisfied {
+		log.Print("jobType criteria not match :-", application.Name)
+		return false
+	}
 	return true
 }
