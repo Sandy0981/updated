@@ -50,13 +50,26 @@ func (s *Service) ApplicationProcessor(ctx context.Context, jobApplications []mo
 
 	for _, application := range jobApplications {
 		wg.Add(1)
-
 		go func(application models.RequestJob) {
 			defer wg.Done()
-			job, err := s.UserRepo.FetchJobPostingByID(ctx, application.Jid)
+			//var redisJob models.Jobs
+			job, err := s.rdb.GetData(ctx, application.Jid)
 			if err != nil {
-				return
+				job, err = s.UserRepo.FetchJobPostingByID(ctx, application.Jid)
+				if err != nil {
+					return
+				}
+				//fmt.Println("data from db", application.Name, dbData)
+				s.rdb.SetData(ctx, application.Jid, job)
 			}
+			//else {
+			//fmt.Println(val, "data before unmarshal")
+			//err = json.Unmarshal([]byte(val), &redisJob)
+			//fmt.Println(redisJob, "data after unmarshal", err)
+			//if err == nil {
+			//	return
+			//}
+			//}
 			if validateJobApplication(application, job) {
 				ch <- application
 			}
