@@ -4,12 +4,14 @@ import (
 	"context"
 	"job-portal-api/internal/auth"
 	"job-portal-api/internal/models"
+	"job-portal-api/internal/redis"
 	"job-portal-api/internal/repository"
 )
 
 type Service struct {
 	UserRepo repository.UserRepo
 	auth     auth.Authentication
+	rdb      *redis.RedisClient
 }
 
 //go:generate mockgen -source=service.go -destination=service_mock.go -package=service
@@ -28,9 +30,10 @@ type UserService interface {
 
 // NewService creates a new UserService with the provided user repository and authentication service.
 // It returns a UserService and an error if the user repository is nil.
-func NewService(userRepo repository.UserRepo, a auth.Authentication) (UserService, error) {
+func NewService(userRepo repository.UserRepo, a auth.Authentication, rdb *redis.RedisClient) (UserService, error) {
 	return &Service{
 		UserRepo: userRepo,
 		auth:     a,
+		rdb:      rdb,
 	}, nil
 }

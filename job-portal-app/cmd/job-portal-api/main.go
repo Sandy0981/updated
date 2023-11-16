@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"job-portal-api/internal/redis"
 	"net/http"
 	"os"
 	"os/signal"
@@ -77,13 +78,15 @@ func StartApp() error {
 	}
 
 	// =========================================================================
+	//initializing redis
+	rdb := redis.NewRedisClient()
 	// initialize the repository layer
 	repo, err := repository.NewRepository(db)
 	if err != nil {
 		return err
 	}
 
-	svc, err := service.NewService(repo, a)
+	svc, err := service.NewService(repo, a, rdb)
 	if err != nil {
 		return err
 	}
