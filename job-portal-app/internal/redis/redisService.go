@@ -6,10 +6,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-redis/redis"
-	"github.com/rs/zerolog/log"
+	"job-portal-api/internal/config"
 	"job-portal-api/internal/models"
 	"time"
+
+	"github.com/go-redis/redis"
+	"github.com/rs/zerolog/log"
 )
 
 // RedisClient implements the Redis interface.
@@ -18,12 +20,12 @@ type RedisClient struct {
 }
 
 // NewRedisClient initializes and returns a RedisClient.
-func NewRedisClient() *RedisClient {
+func NewRedisClient(cfg config.Config) *RedisClient {
 	return &RedisClient{
 		client: redis.NewClient(&redis.Options{
-			Addr:     "localhost:6379", // Redis server address
-			Password: "",               // No password
-			DB:       1,                // Default DB
+			Addr:     cfg.RedisConfig.Addr,     // Redis server address
+			Password: cfg.RedisConfig.Password, // No password
+			DB:       cfg.RedisConfig.DB,       // Default DB
 		}),
 	}
 }
@@ -41,7 +43,6 @@ func (r *RedisClient) SetData(ctx context.Context, jid uint64, jobData models.Jo
 	if err != nil {
 		log.Error().Err(err).Msg("error while setting job data into cache")
 	}
-
 	return err
 }
 
@@ -59,7 +60,6 @@ func (r *RedisClient) GetData(ctx context.Context, jid uint64) (models.Jobs, err
 
 		return models.Jobs{}, err
 	}
-
 	return job, nil
 }
 

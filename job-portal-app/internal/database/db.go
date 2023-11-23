@@ -1,13 +1,17 @@
 package database
 
 import (
+	"fmt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"job-portal-api/internal/config"
 	"job-portal-api/internal/models"
 )
 
-func ConnectToDatabase() (*gorm.DB, error) {
-	dsn := "host=localhost user=postgres password=admin dbname=postgres port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+func ConnectToDatabase(cfg config.Config) (*gorm.DB, error) {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
+		cfg.DBConfig.Host, cfg.DBConfig.UserName, cfg.DBConfig.Password, cfg.DBConfig.DbName, cfg.DBConfig.Port, cfg.DBConfig.SslMode, cfg.DBConfig.TimeZone)
+	//dsn := "host=postgres user=postgres password=admin dbname=postgres port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err

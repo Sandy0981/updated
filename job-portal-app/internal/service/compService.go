@@ -7,6 +7,7 @@ import (
 )
 
 func (s *Service) CreateCompanyService(ctx context.Context, companyData models.Company) (models.Company, error) {
+
 	companyData, err := s.UserRepo.InsertCompany(ctx, companyData)
 	if err != nil {
 		return models.Company{}, err

@@ -3,19 +3,21 @@ package main
 import (
 	"context"
 	"fmt"
+	"job-portal-api/internal/config"
 	"job-portal-api/internal/redis"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/rs/zerolog/log"
 	"job-portal-api/internal/auth"
 	"job-portal-api/internal/database"
 	"job-portal-api/internal/handler"
 	"job-portal-api/internal/repository"
 	"job-portal-api/internal/service"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
@@ -30,6 +32,7 @@ func main() {
 func StartApp() error {
 	// =========================================================================
 	// initializing the authentication support
+	cfg := config.GetConfig()
 	log.Info().Msg("main started : initializing the authentication support")
 
 	//reading the private key file
@@ -59,7 +62,7 @@ func StartApp() error {
 
 	log.Info().Msg("main started : initializing the data")
 
-	db, err := database.ConnectToDatabase()
+	db, err := database.ConnectToDatabase(cfg)
 	if err != nil {
 		return fmt.Errorf("error in opening the database connection : %w", err)
 	}
@@ -79,7 +82,8 @@ func StartApp() error {
 
 	// =========================================================================
 	//initializing redis
-	rdb := redis.NewRedisClient()
+
+	rdb := redis.NewRedisClient(cfg)
 	// initialize the repository layer
 	repo, err := repository.NewRepository(db)
 	if err != nil {
@@ -93,7 +97,7 @@ func StartApp() error {
 
 	// initializing the http server
 	api := http.Server{
-		Addr:         ":8080",
+		Addr:         fmt.Sprintf("%s:%s", cfg.AppConfig.Host, cfg.AppConfig.Port),
 		ReadTimeout:  8000 * time.Second,
 		WriteTimeout: 800 * time.Second,
 		IdleTimeout:  800 * time.Second,
