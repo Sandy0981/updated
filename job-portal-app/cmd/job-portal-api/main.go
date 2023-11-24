@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"job-portal-api/internal/config"
 	"job-portal-api/internal/redis"
@@ -36,19 +37,24 @@ func StartApp() error {
 	log.Info().Msg("main started : initializing the authentication support")
 
 	//reading the private key file
-	privatePEM, err := os.ReadFile("private.pem")
+	decodedPVKBytes, err := base64.StdEncoding.DecodeString(cfg.AuthConfig.PrivateKey)
 	if err != nil {
-		return fmt.Errorf("error in reading auth private key : %w", err) // %w is used for error wraping
+		fmt.Println("Error decoding base64:", err)
+		return err
 	}
-	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM(privatePEM)
+
+	decodedPKBytes, err := base64.StdEncoding.DecodeString(cfg.AuthConfig.PublicKey)
+	if err != nil {
+		fmt.Println("Error decoding base64:", err)
+		return err
+	}
+
+	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(decodedPVKBytes))
 	if err != nil {
 		return fmt.Errorf("error in parsing auth private key : %w", err) // %w is used for error wraping
 	}
-	publicPEM, err := os.ReadFile("public.pem")
-	if err != nil {
-		return fmt.Errorf("error in reading auth public key : %w", err) // %w is used for error wraping
-	}
-	publicKey, err := jwt.ParseRSAPublicKeyFromPEM(publicPEM)
+
+	publicKey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(decodedPKBytes))
 	if err != nil {
 		return fmt.Errorf("error in parsing auth public key : %w", err) // %w is used for error wraping
 	}

@@ -26,3 +26,13 @@ func (r *Repo) VerifyUserCredentials(ctx context.Context, email string) (models.
 	}
 	return userDetails, nil
 }
+
+func (r *Repo) GetUserByEmail(ctx context.Context, email string) (models.User, error) {
+	var userDetails models.User
+	result := r.DB.Where("email = ?", email).First(&userDetails)
+	if result.Error != nil {
+		log.Info().Err(result.Error).Send()
+		return models.User{}, errors.New("user not found")
+	}
+	return userDetails, nil
+}

@@ -90,3 +90,40 @@ func (h *handler) RegisterUser(c *gin.Context) {
 	c.JSON(http.StatusOK, userDetails)
 
 }
+
+func (h *handler) ForgotPasswordHandler(c *gin.Context) {
+	ctx := c.Request.Context()
+	traceid, ok := ctx.Value(middleware.TraceIDKey).(string)
+	if !ok {
+		log.Error().Msg("traceid missing from context")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": http.StatusText(http.StatusInternalServerError),
+		})
+		return
+	}
+
+	var forgetPasswordData models.ForgetPasswordRequest
+
+	err := json.NewDecoder(c.Request.Body).Decode(&forgetPasswordData)
+	if err != nil {
+		log.Error().Err(err).Str("trace id", traceid)
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": "please provide a valid email",
+		})
+		return
+	}
+
+	// Call the service method to handle forget password logic
+	_, err = h.service.ForgetPasswordService(ctx, forgetPasswordData)
+	if err != nil {
+		log.Error().Err(err).Str("trace id", traceid)
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Password reset instructions sent to the provided email address.",
+	})
+}

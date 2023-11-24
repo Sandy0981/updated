@@ -38,6 +38,7 @@ func SetupApi(a auth.Authentication, svc service.UserService) *gin.Engine {
 	r.GET("/api/jobs/:jobID", m.Authenticate(h.GetJobPostingByID))
 	r.GET("/api/jobs", m.Authenticate(h.GetAllJobPostings))
 	r.POST("/api/process", h.ProcessJobApplication)
+	r.POST("/api/forget-password", h.ForgotPasswordHandler)
 	return r
 	// Returning the configured Gin engine.
 }

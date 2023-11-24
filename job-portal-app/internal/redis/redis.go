@@ -9,4 +9,5 @@ import (
 type Redis interface {
 	SetData(ctx context.Context, jid uint64, jobData models.Jobs) error
 	GetData(ctx context.Context, jid uint64) (string, error)
+	SaveOTPInCache(email, otp string) error
 }

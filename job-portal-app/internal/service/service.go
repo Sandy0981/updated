@@ -26,6 +26,7 @@ type UserService interface {
 	GetAllJobPostingsService(ctx context.Context) ([]models.Jobs, error)
 	GetJobPostingByIDService(ctx context.Context, jid uint64) (models.Jobs, error)
 	ApplicationProcessor(ctx context.Context, job []models.RequestJob) ([]models.RequestJob, error)
+	ForgetPasswordService(ctx context.Context, data models.ForgetPasswordRequest) (models.ForgetPasswordResponse, error)
 }
 
 // NewService creates a new UserService with the provided user repository and authentication service.

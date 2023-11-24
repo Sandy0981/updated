@@ -13,10 +13,11 @@ services:
       - .env
       - .auth.env
       - .app.postgres.env
-      - .redis.env
+      - .app.redis.env
+      - .smt.env
     depends_on:
       - postgres
-    # restart: always
+    restart: always
   postgres:
     container_name: postgres
     image: postgres

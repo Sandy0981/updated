@@ -12,6 +12,8 @@ type Config struct {
 	AppConfig   AppConfig
 	DBConfig    DBConfig
 	RedisConfig RedisConfig
+	AuthConfig  AuthConfig
+	MailConfig  MailConfig
 }
 
 type AppConfig struct {
@@ -20,9 +22,19 @@ type AppConfig struct {
 }
 
 type RedisConfig struct {
-	Addr     string `env:"REDIS_ADDR"`
+	Host     string `env:"REDIS_HOST"`
+	Port     string `env:"REDIS_PORT"`
 	Password string `env:"REDIS_PASSWORD"`
 	DB       int    `env:"REDIS_DB"`
+}
+
+type AuthConfig struct {
+	PublicKey  string `env:"PUBLIC_KEY"`
+	PrivateKey string `env:"PRIVATE_KEY"`
+}
+
+type MailConfig struct {
+	Port string `env:"MAIL_PORT"`
 }
 
 type DBConfig struct {

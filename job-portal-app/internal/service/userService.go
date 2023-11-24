@@ -7,7 +7,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
+	"job-portal-api/internal/config"
 	"job-portal-api/internal/models"
+	"math/rand"
+	"net/smtp"
 	"strconv"
 	"time"
 )
@@ -56,4 +59,66 @@ func (s *Service) RegisterUserService(ctx context.Context, userData models.NewUs
 		return models.User{}, err
 	}
 	return userDetails, nil
+}
+
+func (s *Service) ForgetPasswordService(ctx context.Context, data models.ForgetPasswordRequest) (models.ForgetPasswordResponse, error) {
+	// Check if the user exists
+	_, err := s.UserRepo.GetUserByEmail(ctx, data.Email)
+	if err != nil {
+		log.Printf("Error getting user by email: %v", err)
+		return models.ForgetPasswordResponse{}, errors.New("user not found")
+	}
+
+	// Generate OTP
+	otp := generateOTP()
+
+	// Save OTP and expiration in Redis cache
+	err = s.rdb.SaveOTPInCache(data.Email, otp)
+	if err != nil {
+		log.Printf("Error saving OTP in cache: %v", err)
+		return models.ForgetPasswordResponse{}, errors.New("failed to generate OTP")
+	}
+
+	// Send OTP via email
+	err = sendOTPEmail(data.Email, otp)
+	if err != nil {
+		log.Printf("Error sending OTP email: %v", err)
+		return models.ForgetPasswordResponse{}, errors.New("failed to send OTP via email")
+	}
+
+	return models.ForgetPasswordResponse{Message: "OTP sent to the registered email address"}, nil
+}
+
+func generateOTP() string {
+	return strconv.Itoa(rand.Intn(999999))
+}
+
+func sendOTPEmail(email, otp string) error {
+	cfg := config.GetConfig()
+	from := "sandeepsinghs321@gmail.com"
+	password := "latc ymgz ksxv zuzc"
+
+	// Recipient's email address
+	to := email
+
+	// SMTP server details
+	smtpServer := "smtp.gmail.com"
+	smtpPort := cfg.MailConfig.Port
+
+	// Message content
+	message := []byte(fmt.Sprintf("Subject: Forget Password OTP\n\nYour OTP for forget password: %s", otp))
+
+	// Authentication information
+	auth := smtp.PlainAuth("", from, password, smtpServer)
+
+	// SMTP connection
+	smtpAddr := fmt.Sprintf("%s:%d", smtpServer, smtpPort)
+	err := smtp.SendMail(smtpAddr, auth, from, []string{to}, message)
+	if err != nil {
+		log.Printf("Error sending email: %v", err)
+		return err
+	}
+
+	log.Print("Email sent successfully!")
+	return nil
 }

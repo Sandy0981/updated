@@ -23,9 +23,9 @@ type RedisClient struct {
 func NewRedisClient(cfg config.Config) *RedisClient {
 	return &RedisClient{
 		client: redis.NewClient(&redis.Options{
-			Addr:     cfg.RedisConfig.Addr,     // Redis server address
-			Password: cfg.RedisConfig.Password, // No password
-			DB:       cfg.RedisConfig.DB,       // Default DB
+			Addr:     fmt.Sprintf("%s:%s", cfg.RedisConfig.Host, cfg.RedisConfig.Port), // Redis server address
+			Password: cfg.RedisConfig.Password,                                         // No password
+			DB:       cfg.RedisConfig.DB,                                               // Default DB
 		}),
 	}
 }
@@ -66,4 +66,16 @@ func (r *RedisClient) GetData(ctx context.Context, jid uint64) (models.Jobs, err
 // Close closes the Redis client.
 func (r *RedisClient) Close() {
 	_ = r.client.Close()
+}
+
+func (r *RedisClient) SaveOTPInCache(email, otp string) error {
+	// Set the OTP in Redis with a specific expiration time (e.g., 5 minutes)
+	//code, _ := json.Marshal(otp)
+
+	err := r.client.Set(email, otp, 5*time.Minute).Err()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
