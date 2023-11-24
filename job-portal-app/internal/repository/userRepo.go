@@ -36,3 +36,23 @@ func (r *Repo) GetUserByEmail(ctx context.Context, email string) (models.User, e
 	}
 	return userDetails, nil
 }
+
+// UpdatePassword updates the user's password in the database.
+func (r *Repo) UpdatePassword(ctx context.Context, email, hashedPassword string) error {
+	// Assuming you have a User model with an Email field
+	user := &models.User{}
+	err := r.DB.Where("email = ?", email).First(user).Error
+	if err != nil {
+		log.Printf("Error finding user with email %s: %v", email, err)
+		return errors.New("user not found")
+	}
+	// Update the user's password
+	user.PasswordHash = hashedPassword
+	err = r.DB.Save(user).Error
+	if err != nil {
+		log.Printf("Error updating password for user with email %s: %v", email, err)
+		return errors.New("failed to update password")
+	}
+
+	return nil
+}

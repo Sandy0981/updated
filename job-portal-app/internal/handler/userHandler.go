@@ -127,3 +127,40 @@ func (h *handler) ForgotPasswordHandler(c *gin.Context) {
 		"message": "Password reset instructions sent to the provided email address.",
 	})
 }
+
+func (h *handler) UpdatePasswordHandler(c *gin.Context) {
+	ctx := c.Request.Context()
+	traceid, ok := ctx.Value(middleware.TraceIDKey).(string)
+	if !ok {
+		log.Error().Msg("traceid missing from context")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": http.StatusText(http.StatusInternalServerError),
+		})
+		return
+	}
+
+	var updatePasswordData models.ResetPasswordRequest
+	err := json.NewDecoder(c.Request.Body).Decode(&updatePasswordData)
+	if err != nil {
+		log.Error().Err(err).Str("trace id", traceid)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+
+	// Verify OTP before allowing password update
+	err = h.service.VerifyOTPService(ctx, updatePasswordData.Email, updatePasswordData.OTP)
+	if err != nil {
+		log.Error().Err(err).Str("trace id", traceid)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid OTP"})
+		return
+	}
+	// Update the password in the database
+	err = h.service.UpdatePasswordService(ctx, updatePasswordData.Email, updatePasswordData.NewPassword)
+	if err != nil {
+		log.Error().Err(err).Str("trace id", traceid)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
+}

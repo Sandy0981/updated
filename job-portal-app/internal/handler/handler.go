@@ -23,6 +23,7 @@ type Handler interface {
 	CreateJobPosting(c *gin.Context)
 	ProcessJobApplication(c *gin.Context)
 	ForgotPasswordHandler(c *gin.Context)
+	UpdatePasswordHandler(c *gin.Context)
 }
 
 func NewHandler(svc service.UserService) (Handler, error) {

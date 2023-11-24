@@ -122,3 +122,43 @@ func sendOTPEmail(email, otp string) error {
 	log.Print("Email sent successfully!")
 	return nil
 }
+
+func (s *Service) VerifyOTPService(ctx context.Context, email string, otp string) error {
+	storedOTP, err := s.rdb.GetOTP(email)
+	if err != nil {
+		return errors.New("failed to retrieve OTP from the database")
+	}
+
+	// Check if the OTP matches the stored OTP
+	if otp != storedOTP {
+		return errors.New("invalid OTP")
+	}
+
+	// Delete the OTP from the database (optional, depending on your use case)
+	err = s.rdb.DeleteOTP(email)
+	if err != nil {
+		return errors.New("failed to delete OTP from the database")
+	}
+
+	// OTP verification successful
+	return nil
+}
+
+func (s *Service) UpdatePasswordService(ctx context.Context, email, newPassword string) error {
+	// Hash the new password before updating
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		log.Printf("Error hashing the new password for email %s: %v", email, err)
+		return errors.New("failed to hash the new password")
+	}
+
+	// Update the password in the database
+	err = s.UserRepo.UpdatePassword(ctx, email, string(hashedPassword))
+	if err != nil {
+		log.Printf("Error updating the password for email %s: %v", email, err)
+		return fmt.Errorf("failed to update the password: %w", err)
+	}
+
+	log.Printf("Password updated successfully for email %s", email)
+	return nil
+}

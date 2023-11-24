@@ -79,3 +79,25 @@ func (r *RedisClient) SaveOTPInCache(email, otp string) error {
 
 	return nil
 }
+
+func (r *RedisClient) GetOTP(email string) (string, error) {
+	otp, err := r.client.Get(email).Result()
+	if err != nil {
+		log.Printf("Error getting OTP from Redis for email %s: %v", email, err)
+		return "", fmt.Errorf("failed to get OTP from Redis: %w", err)
+	}
+
+	log.Printf("OTP retrieved successfully from Redis for email %s", email)
+	return otp, nil
+}
+
+func (r *RedisClient) DeleteOTP(email string) error {
+	result := r.client.Del(email)
+	if err := result.Err(); err != nil {
+		log.Printf("Error deleting OTP from Redis for email %s: %v", email, err)
+		return fmt.Errorf("failed to delete OTP from Redis: %w", err)
+	}
+
+	log.Printf("OTP deleted successfully from Redis for email %s", email)
+	return nil
+}

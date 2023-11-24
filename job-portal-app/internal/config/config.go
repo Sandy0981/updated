@@ -34,7 +34,7 @@ type AuthConfig struct {
 }
 
 type MailConfig struct {
-	Port string `env:"MAIL_PORT"`
+	Port int `env:"MAIL_PORT"`
 }
 
 type DBConfig struct {
