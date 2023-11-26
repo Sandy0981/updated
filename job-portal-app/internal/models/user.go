@@ -30,3 +30,11 @@ type ResetPasswordRequest struct {
 	NewPassword     string `json:"new_password"`
 	ConfirmPassword string `json:"confirm_password"`
 }
+
+// ChangePasswordRequest represents the request payload for changing the password.
+type ChangePasswordRequest struct {
+	Email           string `json:"email"`
+	OldPassword     string `json:"old_password"`
+	NewPassword     string `json:"new_password"`
+	ConfirmPassword string `json:"confirm_password"`
+}

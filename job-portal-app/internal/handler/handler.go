@@ -24,6 +24,7 @@ type Handler interface {
 	ProcessJobApplication(c *gin.Context)
 	ForgotPasswordHandler(c *gin.Context)
 	UpdatePasswordHandler(c *gin.Context)
+	ChangePasswordHandler(c *gin.Context)
 }
 
 func NewHandler(svc service.UserService) (Handler, error) {

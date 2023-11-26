@@ -164,3 +164,41 @@ func (h *handler) UpdatePasswordHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
 }
+
+// ChangePasswordHandler handles requests to update the password.
+func (h *handler) ChangePasswordHandler(c *gin.Context) {
+	ctx := c.Request.Context()
+	traceID, ok := ctx.Value(middleware.TraceIDKey).(string)
+	if !ok {
+		log.Error().Msg("traceid missing from context")
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"error": http.StatusText(http.StatusInternalServerError),
+		})
+		return
+	}
+
+	var changePasswordData models.ChangePasswordRequest
+	err := json.NewDecoder(c.Request.Body).Decode(&changePasswordData)
+	if err != nil {
+		log.Error().Err(err).Str("trace id", traceID)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+
+	// Verify old password before allowing the password update
+	err = h.service.VerifyOldPassword(ctx, changePasswordData.Email, changePasswordData.OldPassword)
+	if err != nil {
+		log.Error().Err(err).Str("trace id", traceID)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid old password"})
+		return
+	}
+
+	// Update the password in the database
+	err = h.service.UpdatePasswordService(ctx, changePasswordData.Email, changePasswordData.NewPassword)
+	if err != nil {
+		log.Error().Err(err).Str("trace id", traceID)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Password updated successfully"})
+}

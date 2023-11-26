@@ -29,6 +29,7 @@ type UserService interface {
 	ForgetPasswordService(ctx context.Context, data models.ForgetPasswordRequest) (models.ForgetPasswordResponse, error)
 	VerifyOTPService(ctx context.Context, email string, otp string) error
 	UpdatePasswordService(ctx context.Context, email string, newPass string) error
+	VerifyOldPassword(ctx context.Context, email string, oldPass string) error
 }
 
 // NewService creates a new UserService with the provided user repository and authentication service.

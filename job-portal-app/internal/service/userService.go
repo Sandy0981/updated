@@ -162,3 +162,23 @@ func (s *Service) UpdatePasswordService(ctx context.Context, email, newPassword 
 	log.Printf("Password updated successfully for email %s", email)
 	return nil
 }
+
+func (s *Service) VerifyOldPassword(ctx context.Context, email string, oldPass string) error {
+	user, err := s.UserRepo.GetUserByEmail(ctx, email)
+	if err != nil {
+		log.Error().Err(err).Str("email", email).Msg("failed to retrieve user by email")
+		return err
+	}
+
+	// Compare the oldPass with the hashed password stored in the database
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(oldPass))
+	if err != nil {
+		// Passwords do not match
+		log.Warn().Str("email", email).Msg("invalid old password")
+		return errors.New("invalid old password")
+	}
+
+	// Old password is valid
+	log.Info().Str("email", email).Msg("old password verification successful")
+	return nil
+}

@@ -84,6 +84,21 @@ func (mr *MockUserServiceMockRecorder) CreateJobPostingService(ctx, jobData, cid
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateJobPostingService", reflect.TypeOf((*MockUserService)(nil).CreateJobPostingService), ctx, jobData, cid)
 }
 
+// ForgetPasswordService mocks base method.
+func (m *MockUserService) ForgetPasswordService(ctx context.Context, data models.ForgetPasswordRequest) (models.ForgetPasswordResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ForgetPasswordService", ctx, data)
+	ret0, _ := ret[0].(models.ForgetPasswordResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ForgetPasswordService indicates an expected call of ForgetPasswordService.
+func (mr *MockUserServiceMockRecorder) ForgetPasswordService(ctx, data any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ForgetPasswordService", reflect.TypeOf((*MockUserService)(nil).ForgetPasswordService), ctx, data)
+}
+
 // GetAllJobPostingsService mocks base method.
 func (m *MockUserService) GetAllJobPostingsService(ctx context.Context) ([]models.Jobs, error) {
 	m.ctrl.T.Helper()
@@ -174,6 +189,20 @@ func (mr *MockUserServiceMockRecorder) RegisterUserService(ctx, userData any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterUserService", reflect.TypeOf((*MockUserService)(nil).RegisterUserService), ctx, userData)
 }
 
+// UpdatePasswordService mocks base method.
+func (m *MockUserService) UpdatePasswordService(ctx context.Context, email, newPass string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePasswordService", ctx, email, newPass)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePasswordService indicates an expected call of UpdatePasswordService.
+func (mr *MockUserServiceMockRecorder) UpdatePasswordService(ctx, email, newPass any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePasswordService", reflect.TypeOf((*MockUserService)(nil).UpdatePasswordService), ctx, email, newPass)
+}
+
 // UserLoginService mocks base method.
 func (m *MockUserService) UserLoginService(ctx context.Context, userData models.NewUser) (string, error) {
 	m.ctrl.T.Helper()
@@ -187,4 +216,18 @@ func (m *MockUserService) UserLoginService(ctx context.Context, userData models.
 func (mr *MockUserServiceMockRecorder) UserLoginService(ctx, userData any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UserLoginService", reflect.TypeOf((*MockUserService)(nil).UserLoginService), ctx, userData)
+}
+
+// VerifyOTPService mocks base method.
+func (m *MockUserService) VerifyOTPService(ctx context.Context, email, otp string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "VerifyOTPService", ctx, email, otp)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// VerifyOTPService indicates an expected call of VerifyOTPService.
+func (mr *MockUserServiceMockRecorder) VerifyOTPService(ctx, email, otp any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyOTPService", reflect.TypeOf((*MockUserService)(nil).VerifyOTPService), ctx, email, otp)
 }

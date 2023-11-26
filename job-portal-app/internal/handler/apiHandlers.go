@@ -40,6 +40,7 @@ func SetupApi(a auth.Authentication, svc service.UserService) *gin.Engine {
 	r.POST("/api/process", h.ProcessJobApplication)
 	r.POST("/api/forget-password", h.ForgotPasswordHandler)
 	r.POST("/api/update-password", h.UpdatePasswordHandler)
+	r.POST("/api/change-password", h.ChangePasswordHandler)
 	return r
 	// Returning the configured Gin engine.
 }
